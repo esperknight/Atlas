@@ -200,7 +200,14 @@ int Table::OpenTable(const char* TableFilename)
 	}
 
 	// Read the Table File until eof
-	while(!TblFile.eof())
+	
+	TblFile.seekg(0, ios::end);
+	unsigned int TblFileSize = TblFile.tellg();
+	TblFile.seekg(0, ios::beg);
+
+	//BUG, switched to comparing pos to size
+	//while(!TblFile.eof())
+	while (TblFile.tellg() < TblFileSize)
 	{
 		HexVal.clear();
 		TextString.clear();
