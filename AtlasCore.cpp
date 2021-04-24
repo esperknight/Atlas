@@ -299,6 +299,11 @@ void AtlasCore::PrintUnwrittenPointers()
 
 bool AtlasCore::ExecuteCommand(Command& Cmd)
 {
+	// For file insertion
+	static FILE *fp;
+	static char buffer[1024];
+	static unsigned int num;
+
 	static unsigned int PtrValue;
 	static unsigned int PtrNum;
 	static unsigned int PtrPos;
@@ -545,6 +550,7 @@ bool AtlasCore::ExecuteCommand(Command& Cmd)
 				Cmd.Parameters[0].Value.c_str(), Cmd.Parameters[1].Value.c_str(), StringToInt64(Cmd.Parameters[2].Value), StringToUInt(Cmd.Parameters[3].Value), HeaderSize);
 		return Success;
 	case CMD_WRITEPTR:
+		//File.AlignString();
 		PtrValue = PtrHandler.GetPtrAddress(Cmd.Parameters[0].Value, File.GetPosT(), Size);
 		PtrPos = StringToUInt(Cmd.Parameters[1].Value);
 		if(PtrValue == -1)
@@ -765,6 +771,39 @@ bool AtlasCore::ExecuteCommand(Command& Cmd)
 		File.WriteP(&PtrValue, Size/8, 1, PtrPos);
 		Logger.Log("%6u WRITE     PointerTable '%s' ScriptPos $%X PointerPos $%X PointerValue $%08X\n", Cmd.Line,
 			Cmd.Parameters[0].Value.c_str(), File.GetPosT(), PtrPos, PtrValue);
+		return true;
+	case CMD_INSERT:
+		fp = fopen( Cmd.Parameters[0].Value.c_str(), "rb" );
+		if( !fp )
+		{
+			printf( "File not found @ %s\n", Cmd.Parameters[0].Value.c_str() );
+			return false;
+		}
+		while( num = fread( buffer, 1, 1024, fp ) )
+		{
+			fwrite( buffer, 1, num, File.GetFileT() );
+		}
+		fclose( fp );
+		return true;
+	case CMD_WARN:
+		if ((ftell(File.GetFileT()) - 1) > StringToUInt(Cmd.Parameters[0].Value))
+		{
+			printf("BARF %d bytes @ %s - %s\n",
+				(ftell(File.GetFileT()) - 1) - StringToUInt(Cmd.Parameters[0].Value), Cmd.Parameters[0].Value.c_str(), Cmd.Parameters[1].Value.c_str());
+		}
+		else
+		{
+			//printf("OKAY %d bytes @ %s\n",
+			//	StringToUInt(Cmd.Parameters[0].Value) - ftell(File.GetFileT()), Cmd.Parameters[1].Value.c_str());
+		}
+		return true;
+	case CMD_JMP3:
+		File.MoveT(StringToUInt(Cmd.Parameters[0].Value), StringToUInt(Cmd.Parameters[1].Value), true);
+		Stats.NewStatsBlock(File.GetPosT(), StringToUInt(Cmd.Parameters[1].Value), Cmd.Line);
+		Logger.Log("%6u JMP       ROM Position is now $%X with max bound of $%X\n",
+			Cmd.Line, StringToUInt(Cmd.Parameters[0].Value), StringToUInt(Cmd.Parameters[1].Value));
+		IsInJmp = true;
+		
 		return true;
 	default:
 		Logger.BugReport(__LINE__, __FILE__, "Bad Cmd #%u", Cmd.Function);

@@ -61,7 +61,13 @@ static const unsigned int CMD_WRITEEMBTBL1 = 46;
 static const unsigned int CMD_WRITEEMBTBL2 = 47;
 static const unsigned int CMD_WRITETBL2 = 48;
 
-static const unsigned int CommandCount = 49;
+//Custom
+static const unsigned int CMD_INSERT = 49;
+static const unsigned int CMD_WARN = 50;
+static const unsigned int CMD_JMP3 = 51;
+
+
+static const unsigned int CommandCount = 52;
 
 static const char* CommandStrings[CommandCount] = { "JMP", "JMP", "SMA", "HDR", "STRTYPE",
 	"ADDTBL", "ACTIVETBL", "VAR", "WUB", "WBB", "WHB", "WLB", "W16", "W24", "W32",
@@ -69,7 +75,7 @@ static const char* CommandStrings[CommandCount] = { "JMP", "JMP", "SMA", "HDR", 
 	"AUTOWRITE", "AUTOWRITE", "CREATEPTR", "WRITE",	"LOADEXT", "EXECEXT", "DISABLE", "DISABLE", 
 	"PASCALLEN", "AUTOEXEC", "DISABLE", "FIXEDLENGTH", "WUB", "WBB", "WHB", "WLB", 
 	"ENDIANSWAP", "STRINGALIGN", "EMBPTRTBL", "WHW", "WHW", "SETTARGETFILE", "SETPTRFILE", "WRITE",
-	"WRITE", "WRITE" };
+	"WRITE", "WRITE", "INSERT", "WARN", "JMP" };
 
 // Parameter types
 static const unsigned int TypeCount = 12;
@@ -109,7 +115,8 @@ static const unsigned int Types[CommandCount][5] = { { P_NUMBER }, { P_NUMBER, P
 { P_STRING }, { P_NUMBER }, // ENDIANSWAP STRINGALIGN 
 { P_EMBPOINTERTABLE, P_NUMBER, P_CUSTOMPOINTER }, // EMBPTRTBL
 { P_NUMBER }, { P_CUSTOMPOINTER, P_NUMBER }, { P_STRING }, {P_STRING }, // WHW WHW SETTARGETFILE SETPTRFILE
-{ P_EMBPOINTERTABLE }, { P_EMBPOINTERTABLE, P_NUMBER }, { P_POINTERTABLE, P_NUMBER } // WRITE WRITE WRITE
+{ P_EMBPOINTERTABLE }, { P_EMBPOINTERTABLE, P_NUMBER }, { P_POINTERTABLE, P_NUMBER }, // WRITE WRITE WRITE
+{ P_STRING, P_STRING },{ P_NUMBER, P_STRING }, { P_NUMBER, P_NUMBER, P_NUMBER } // INSERT WARN JMP3
 };
 
 static const unsigned int ParamCount[CommandCount] = { 1, 2, 1, // JMP1 JMP2 SMA
@@ -119,7 +126,9 @@ static const unsigned int ParamCount[CommandCount] = { 1, 2, 1, // JMP1 JMP2 SMA
 4, 1, 3, 1, 2, 2, // PTRTBL WRITE PTRLIST WRITE AUTOWRITE AUTOWRITE
 4, 2, 2, 2, 2, 2, 1, 3, 2, 2, // CREATEPTR WRITE LOADEXT EXECEXT DISABLE DISABLE PASCALLEN AUTOEXEC DISABLE FIXEDLENGTH
 2, 2, 2, 2, 1, 1, 3, 1, 2, 1, 1, // WUB WBB WHB WLB ENDIANSWAP STRINGALIGN EMBPTRTBL WHW WHW SETTARGETFILE SETPTRFILE
-1, 2, 2 }; // WRITE WRITE WRITE
+1, 2, 2, // WRITE WRITE WRITE
+2, 2, 3 // INSERT, WARN, JMP3
+}; 
 
 typedef struct Parameter
 {
