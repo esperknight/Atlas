@@ -30,6 +30,7 @@ public:
 	bool OpenFileP(const char* FileName);
 	void CloseFileT();
 	void CloseFileP();
+	void MoveT(const unsigned int Pos, const unsigned int ScriptBound, bool JumpToEnd);
 	void MoveT(const unsigned int Pos, const unsigned int ScriptBound);
 	void MoveT(const unsigned int Pos);
 	void WriteP(const void* Data, const unsigned int Size, const unsigned int DataCount, const unsigned int Pos);
@@ -37,6 +38,7 @@ public:
 	void WriteT(const void* Data, const unsigned int Size, const unsigned int DataCount);
 	unsigned int GetPosT();
 
+	unsigned int GetAutoJumpToEnd() { return AutoJumpToEnd; };
 	unsigned int GetMaxBound() { return MaxScriptPos; }
 	unsigned int GetBytesInserted() { return BytesInserted; }
 	unsigned int GetBytesOverflowed() { return TotalBytesSkipped; }
@@ -49,12 +51,15 @@ public:
 	bool InsertText(string& Text, unsigned int Line);
 	bool FlushText();
 
+	inline unsigned int SetMaxWritableBytes(const unsigned int ScriptBound);
 	inline unsigned int GetMaxWritableBytes();
 	FILE* GetFileT();
 	FILE* GetFileP();
 	void GetScriptBuf(list<TBL_STRING>& Strings);
 	void SetScriptBuf(list<TBL_STRING>& Strings);
 	unsigned int GetStringType();
+
+	inline void AlignString();
 
 private:
 	FILE* tfile; // Target file for script
@@ -71,8 +76,9 @@ private:
 	inline bool WriteString(string& text);
 	inline unsigned int WriteNullString(string& text);
 	inline unsigned int WritePascalString(string& text);
-	inline void AlignString();
+	
 
+	bool AutoJumpToEnd;
 	unsigned int MaxScriptPos;
 	unsigned int BytesInserted;
 	unsigned int TotalBytesSkipped;
