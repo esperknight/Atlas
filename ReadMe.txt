@@ -1,32 +1,3 @@
-========================================================================
-    CONSOLE APPLICATION : Atlas Project Overview
-========================================================================
+Atlas is a dedicated, extensible script insertion utility capable of dealing with scripts of advanced complexity. (Shamelessly stolen from RNH.net.  See https://www.romhacking.net/utilities/224/ for the original).
 
-AppWizard has created this Atlas application for you.  
-This file contains a summary of what you will find in each of the files that
-make up your Atlas application.
-
-
-Atlas.vcproj
-    This is the main project file for VC++ projects generated using an Application Wizard. 
-    It contains information about the version of Visual C++ that generated the file, and 
-    information about the platforms, configurations, and project features selected with the
-    Application Wizard.
-
-Atlas.cpp
-    This is the main application source file.
-
-/////////////////////////////////////////////////////////////////////////////
-Other standard files:
-
-StdAfx.h, StdAfx.cpp
-    These files are used to build a precompiled header (PCH) file
-    named Atlas.pch and a precompiled types file named StdAfx.obj.
-
-/////////////////////////////////////////////////////////////////////////////
-Other notes:
-
-AppWizard uses "TODO:" comments to indicate parts of the source code you
-should add to or customize.
-
-/////////////////////////////////////////////////////////////////////////////
+My version includes fixes for embedded pointers and parsing tables.  I also added the abillity to automatically jump to the end of a file using #JMP(-1).  I've included additions from g8tzetal's versions for file insertion and also putting in warnings when going past a spot (#WARN($POS, "COMMENT_HERE")) when inserting (#INSERT("FILENAME", "ID")). 
