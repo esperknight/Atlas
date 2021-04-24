@@ -16,6 +16,7 @@ AtlasFile::AtlasFile()
 	pfile = NULL;
 
 	MaxScriptPos = -1;
+	AutoJumpToEnd = false;
 	ActiveTbl = NULL;
 	BytesInserted = 0;
 	TotalBytes = 0;
@@ -117,17 +118,52 @@ unsigned int AtlasFile::GetStringType()
 	return StrType;
 }
 
+void AtlasFile::MoveT(const unsigned int Pos, const unsigned int ScriptBound, bool JumpToEnd)
+{
+	if (tfile)
+	{
+		if ((int)Pos == -1)
+		{
+			fseek(tfile, 0, SEEK_END);
+		}
+		else
+		{
+			fseek(tfile, Pos, SEEK_SET);
+		}
+	}
+	MaxScriptPos = ScriptBound;
+	AutoJumpToEnd = JumpToEnd;
+}
+
 void AtlasFile::MoveT(const unsigned int Pos, const unsigned int ScriptBound)
 {
 	if(tfile)
-		fseek(tfile, Pos, SEEK_SET);
+	{
+		if ((int)Pos == -1)
+		{
+			fseek(tfile, 0, SEEK_END);
+		}
+		else
+		{
+			fseek(tfile, Pos, SEEK_SET);
+		}
+	}
 	MaxScriptPos = ScriptBound;
 }
 
 void AtlasFile::MoveT(const unsigned int Pos)
 {
 	if(tfile)
-		fseek(tfile, Pos, SEEK_SET);
+	{
+		if ((int)Pos == -1)
+		{
+			fseek(tfile, 0, SEEK_END);
+		}
+		else
+		{
+			fseek(tfile, Pos, SEEK_SET);
+		}
+	}
 }
 
 void AtlasFile::SetTable(Table* Tbl)
@@ -351,6 +387,8 @@ bool AtlasFile::FlushText()
 		WriteString(i->Text);
 		Logger.Log("%s\n", CurTextString.c_str());
 		CurTextString.clear();
+
+		AlignString();
 	}
 
 	ActiveTbl->StringTable.clear();
@@ -396,9 +434,16 @@ inline unsigned int AtlasFile::WriteNullString(string& text)
 	// Truncate string if it overflows ROM bounds
 	if(maxwrite < size)
 	{
-		int overflowbytes = size - maxwrite;
-		TotalBytesSkipped += overflowbytes;
-		size = maxwrite;
+		if (GetAutoJumpToEnd())
+		{
+			MoveT(-1);
+		}
+		else
+		{
+			int overflowbytes = size - maxwrite;
+			TotalBytesSkipped += overflowbytes;
+			size = maxwrite;
+		}
 	}
 
 	// Truncate string if it's too long for a fixed length string
@@ -407,6 +452,7 @@ inline unsigned int AtlasFile::WriteNullString(string& text)
 		TotalBytesSkipped += (size - StringLength);
 		size = StringLength;
 		printf("Changed string length for %s to %d at %X\n", CurTextString.c_str(), StringLength, GetPosT());
+		//Logger.ReportWarning(CurrentLine, "Changed string length for %s to %d at %X\n", CurTextString.c_str(), StringLength, GetPosT());
 	}
 
 	fwrite(text.data(), 1, size, tfile);
@@ -420,11 +466,21 @@ inline unsigned int AtlasFile::WritePascalString(string& text)
 	unsigned int size = (unsigned int)text.length();
 	unsigned int maxwrite = GetMaxWritableBytes();
 
-	Stats.AddScriptBytes(size+PascalLength);
+	Stats.AddScriptBytes(size + PascalLength);
 
 	// Truncate string if it overflows ROM bounds
-	if(PascalLength > maxwrite) // PascalLength doesn't even fit
-		goto nowrite;
+	if (PascalLength > maxwrite) // PascalLength doesn't even fit
+	{
+		if (GetAutoJumpToEnd())
+		{
+			MoveT(-1);
+		}
+		else
+		{
+			goto nowrite;
+		}
+	}
+
 	if(maxwrite < size + PascalLength) // PascalLength and maybe partial string fits
 	{
 		int overflowbytes = (size+PascalLength) - maxwrite;
@@ -469,12 +525,17 @@ inline void AtlasFile::AlignString()
 	}
 }
 
+inline unsigned int AtlasFile::SetMaxWritableBytes(const unsigned int ScriptBound)
+{
+	MaxScriptPos = ScriptBound;
+}
+
 inline unsigned int AtlasFile::GetMaxWritableBytes()
 {
 	if(MaxScriptPos == -1)
 		return -1;
 	unsigned int CurPos = ftell(tfile);
-	if(CurPos > MaxScriptPos)
+	if (CurPos > MaxScriptPos)
 		return 0;
 	return MaxScriptPos - CurPos + 1;
 }
