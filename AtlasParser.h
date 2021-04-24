@@ -17,7 +17,7 @@ public:
 
 private:
 	void ParseLine(std::string& line);
-	inline void ParseCommand(std::string& line);
+	inline bool ParseCommand(std::string& line);
 	inline void FlushBlock();
 	inline void AddText(std::string& text);
 	inline unsigned int IdentifyType(std::string& str);

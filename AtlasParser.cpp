@@ -82,7 +82,7 @@ void AtlasParser::ParseLine(string& line)
 
 	if(firstchar == string::npos) // All whitespace
 	{
-		string s = "";
+		string s = (line.length() > 0) ? line : "";
 		AddText(s);
 		return;
 	}
@@ -94,12 +94,18 @@ void AtlasParser::ParseLine(string& line)
 	case '#': // Atlas command
 		if(CurBlock.TextLines.empty()) // No text, build more commands
 		{
-			ParseCommand(editline);
+			if (!ParseCommand(editline))
+			{
+				AddText(line);
+			}
 		}
 		else // Clear, parse the command
 		{
 			FlushBlock();
-			ParseCommand(editline);
+			if (!ParseCommand(editline))
+			{
+				AddText(line);
+			}
 		}
 		break;
 	case '/': // Possible comment
@@ -134,7 +140,7 @@ inline void AtlasParser::AddText(string& text)
 	CurBlock.TextLines.push_back(text);
 }
 
-inline void AtlasParser::ParseCommand(string& line)
+inline bool AtlasParser::ParseCommand(string& line)
 {
 	if(line[0] != '#')
 		printf("Bug, %s %d.  Should start with a '#'\n'%s'", __FILE__, __LINE__, line);
@@ -150,9 +156,9 @@ inline void AtlasParser::ParseCommand(string& line)
 
 	while(curpos < line.length() && (ch = line[curpos]) != '(')
 	{
-		if(isalpha(ch) || isdigit(ch))
+		//if(isalpha(ch) || isdigit(ch))
 			CmdStr += ch;
-		else Logger.ReportError(CurrentLine, "Invalid syntax: Nonalphabetical character in command");
+		//else Logger.ReportError(CurrentLine, "Invalid syntax: Nonalphabetical character in command");
 
 		curpos++;
 	}
@@ -176,7 +182,7 @@ inline void AtlasParser::ParseCommand(string& line)
 
 			Param.Type = IdentifyType(Param.Value);
 			if(Param.Type == P_INVALID)
-				Logger.ReportError(CurrentLine, "Invalid argument for %s for parameter %d", CmdStr.c_str(), ParamNum);
+				Logger.ReportWarning(CurrentLine, "Invalid argument for %s for parameter %d", CmdStr.c_str(), ParamNum);
 			Command.Parameters.push_back(Param);
 			Param.Type = P_INVALID;
 			Param.Value.clear();
@@ -192,7 +198,7 @@ inline void AtlasParser::ParseCommand(string& line)
 
 	// Trim trailing whitespace
 	size_t Last;
-	for(Last = Param.Value.length() - 1; Last > 0; Last--)
+	for(Last = Param.Value.length() - 1; Param.Value.length() != 0 && Last > 0; Last--)
 		if(Param.Value[Last] != ' ' && Param.Value[Last] != '\t')
 			break;
 	if(Last < Param.Value.length())
@@ -200,15 +206,15 @@ inline void AtlasParser::ParseCommand(string& line)
 
 	Param.Type = IdentifyType(Param.Value);
 	if(Param.Type == P_INVALID)
-		Logger.ReportError(CurrentLine, "Invalid argument for %s for parameter %d", CmdStr.c_str(), ParamNum);
+		Logger.ReportWarning(CurrentLine, "Invalid argument for %s for parameter %d", CmdStr.c_str(), ParamNum);
 
 	for(ListErrorIt i = Logger.Errors.begin(); i != Logger.Errors.end(); i++)
-		if(i->Severity = FATALERROR)
-			return;
+		if(i->Severity == FATALERROR)
+			return false;
 
 	Command.Parameters.push_back(Param);
 
-	AddCommand(CmdStr, Command);
+	return AddCommand(CmdStr, Command);
 }
 
 inline unsigned int AtlasParser::IdentifyType(string& str)
@@ -273,7 +279,7 @@ inline bool AtlasParser::AddCommand(string& CmdStr, Command& Cmd)
 	pair<StrCmdMapIt, StrCmdMapIt> val = CmdMap.equal_range(CmdStr);
 	if(val.first == val.second) // not found
 	{
-		Logger.ReportError(CurrentLine, "Invalid command %s", CmdStr.c_str());
+		Logger.ReportWarning(CurrentLine, "Invalid command %s", CmdStr.c_str());
 		return false;
 	}
     
