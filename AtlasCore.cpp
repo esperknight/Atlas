@@ -634,6 +634,11 @@ bool AtlasCore::ExecuteCommand(Command& Cmd)
 		PtrPos = StringToUInt(Cmd.Parameters[1].Value);
 		if(PtrValue == -1)
 			return false;
+		if ((PtrValue & 0x8000) >> 15 == 1)
+		{
+			int ActualPtrValue = (PtrValue & 0xFFFF0000) + ((PtrValue & 0xFFFF) + -0x10000);
+			PtrValue += PtrValue - ActualPtrValue;
+		}
 		PtrByte = (PtrValue & 0xFF000000) >> 24;
 		File.WriteP(&PtrByte, 1, 1, PtrPos);
 		Logger.Log("%6u WUB       CustomPointer '%s' ScriptPos $%X PointerPos $%X PointerValue $%02X\n", Cmd.Line,
@@ -644,6 +649,11 @@ bool AtlasCore::ExecuteCommand(Command& Cmd)
 		PtrPos = StringToUInt(Cmd.Parameters[1].Value);
 		if(PtrValue == -1)
 			return false;
+		if ((PtrValue & 0x8000) >> 15 == 1)
+		{
+			int ActualPtrValue = (PtrValue & 0xFFFF0000) + ((PtrValue & 0xFFFF) + -0x10000);
+			PtrValue += PtrValue - ActualPtrValue;
+		}
 		PtrByte = (PtrValue & 0xFF0000) >> 16;
 		File.WriteP(&PtrByte, 1, 1, PtrPos);
 		Logger.Log("%6u WBB       CustomPointer '%s' ScriptPos $%X PointerPos $%X PointerValue $%02X\n", Cmd.Line,
@@ -654,6 +664,11 @@ bool AtlasCore::ExecuteCommand(Command& Cmd)
 		PtrPos = StringToUInt(Cmd.Parameters[1].Value);
 		if(PtrValue == -1)
 			return false;
+		if ((PtrValue & 0x8000) >> 15 == 1)
+		{
+			int ActualPtrValue = (PtrValue & 0xFFFF0000) + ((PtrValue & 0xFFFF) + -0x10000);
+			PtrValue += PtrValue - ActualPtrValue;
+		}
 		PtrByte = (PtrValue & 0xFF00) >> 8;
 		File.WriteP(&PtrByte, 1, 1, PtrPos);
 		Logger.Log("%6u WHB       CustomPointer '%s' ScriptPos $%X PointerPos $%X PointerValue $%02X\n", Cmd.Line,
@@ -664,6 +679,11 @@ bool AtlasCore::ExecuteCommand(Command& Cmd)
 		PtrPos = StringToUInt(Cmd.Parameters[1].Value);
 		if(PtrValue == -1)
 			return false;
+		if ((PtrValue & 0x8000) >> 15 == 1)
+		{
+			int ActualPtrValue = (PtrValue & 0xFFFF0000) + ((PtrValue & 0xFFFF) + -0x10000);
+			PtrValue += PtrValue - ActualPtrValue;
+		}
 		PtrByte = PtrValue & 0xFF;
 		File.WriteP(&PtrByte, 1, 1, PtrPos);
 		Logger.Log("%6u WLB       CustomPointer '%s' ScriptPos $%X PointerPos $%X PointerValue $%02X\n", Cmd.Line,
